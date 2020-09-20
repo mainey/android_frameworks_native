@@ -40,6 +40,7 @@
 #include <compositionengine/CompositionEngine.h>
 #include <compositionengine/Display.h>
 #include <compositionengine/DisplayColorProfile.h>
+#include <compositionengine/FodExtension.h>
 #include <compositionengine/Layer.h>
 #include <compositionengine/OutputLayer.h>
 #include <compositionengine/RenderSurface.h>
@@ -1893,6 +1894,7 @@ void SurfaceFlinger::calculateWorkingSet() {
             }
 
             const auto& displayState = display->getState();
+
             layer->setPerFrameData(displayDevice, displayState.transform, displayState.viewport,
                                    displayDevice->getSupportedPerFrameMetadata(), targetDataspace);
         }
@@ -4269,9 +4271,18 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     status_t result = NO_ERROR;
 
     sp<Layer> layer;
+    sp<IBinder> DimLayerHandle;
+    bool isFODLayer = false;
 
     String8 uniqueName = getUniqueLayerName(name);
-
+    if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
+        isFODLayer = true;
+        const auto displayDevice = getDefaultDisplayDeviceLocked();
+        createLayer(String8("GODDAMDIMLAYER"), client, displayDevice->getWidth(),
+                    displayDevice->getHeight(), format,
+                    ISurfaceComposerClient::eFXSurfaceBufferState, std::move(metadata),
+                    &DimLayerHandle, gbp, parentHandle, parentLayer);
+    }
     bool primaryDisplayOnly = false;
 
     // window type is WINDOW_TYPE_DONT_SCREENSHOT from SurfaceControl.java
@@ -4293,6 +4304,10 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
         case ISurfaceComposerClient::eFXSurfaceBufferState:
             result = createBufferStateLayer(client, uniqueName, w, h, flags, std::move(metadata),
                                             handle, &layer);
+            if (strcmp(name, String8("GODDAMDIMLAYER")) == 0) {
+                layer->setColorTransform(mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+                // layer->setAlpha(0.2f);
+            }
             break;
         case ISurfaceComposerClient::eFXSurfaceColor:
             // check if buffer size is set for color layer.
@@ -4304,6 +4319,11 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
 
             result = createColorLayer(client, uniqueName, w, h, flags, std::move(metadata), handle,
                                       &layer);
+            if (strcmp(name, String8("GODDAMDIMLAYER")) == 0) {
+                layer->setColor(half3{0, 0, 0});
+                //layer->setAlpha(0.2f);
+            }
+
             break;
         case ISurfaceComposerClient::eFXSurfaceContainer:
             // check if buffer size is set for container layer.
@@ -4329,7 +4349,7 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     }
 
     bool addToCurrentState = callingThreadHasUnscopedSurfaceFlingerAccess();
-    result = addClientLayer(client, *handle, *gbp, layer, parentHandle, parentLayer,
+    result = addClientLayer(client, *handle, *gbp, layer, isFODLayer ? DimLayerHandle : parentHandle, isFODLayer ? nullptr : parentLayer,
                             addToCurrentState);
     if (result != NO_ERROR) {
         return result;
