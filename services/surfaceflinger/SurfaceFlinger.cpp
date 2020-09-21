@@ -1894,10 +1894,7 @@ void SurfaceFlinger::calculateWorkingSet() {
             }
 
             const auto& displayState = display->getState();
-            if (mDimmingEnabled && (strcmp(layer->getDebugName(), FOD_TOUCHED_LAYER_NAME) != 0))
-                layer->setAlpha(0.2f);
-            else if (!mDimmingEnabled)
-                layer->setAlpha(1);
+
             layer->setPerFrameData(displayDevice, displayState.transform, displayState.viewport,
                                    displayDevice->getSupportedPerFrameMetadata(), targetDataspace);
         }
@@ -4278,7 +4275,13 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     String8 uniqueName = getUniqueLayerName(name);
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
         mDimmingEnabled = true;
-        signalRefresh();
+        sp<IBinder> DimLayerHandle;
+        createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
+                    ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), DimLayerHandle,
+                    gbp, parentHandle, parentLayer);
+        parentHandle = DimLayerHandle;
+        parentLayer = fromHandle(DimLayerHandle);;
+        parentLayer->SetColor(half3{0, 0, 0});
     }
     bool primaryDisplayOnly = false;
 
@@ -4449,7 +4452,6 @@ void SurfaceFlinger::onHandleDestroyed(sp<Layer>& layer)
     Mutex::Autolock lock(mStateLock);
     if (strcmp(layer->getDebugName(), FOD_TOUCHED_LAYER_NAME) == 0) {
         mDimmingEnabled = false;
-        signalRefresh();
     }
     // If a layer has a parent, we allow it to out-live it's handle
     // with the idea that the parent holds a reference and will eventually
