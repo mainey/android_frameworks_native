@@ -4277,7 +4277,9 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     String8 uniqueName = getUniqueLayerName(name);
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
         isFODLayer = true;
-        createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
+        const auto displayDevice = getDefaultDisplayDeviceLocked();
+        createLayer(String8("GODDAMDIMLAYER"), client, displayDevice->getWidth(),
+                    displayDevice->getHeight(), format,
                     ISurfaceComposerClient::eFXSurfaceBufferState, std::move(metadata),
                     &DimLayerHandle, gbp, parentHandle, parentLayer);
     }
