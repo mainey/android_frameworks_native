@@ -4276,7 +4276,6 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
 
     String8 uniqueName = getUniqueLayerName(name);
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
-        mDimmingEnabled = true;
         isDimLayer = true;
         createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
                     ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), &DimLayerHandle,
@@ -4454,9 +4453,6 @@ void SurfaceFlinger::markLayerPendingRemovalLocked(const sp<Layer>& layer) {
 void SurfaceFlinger::onHandleDestroyed(sp<Layer>& layer)
 {
     Mutex::Autolock lock(mStateLock);
-    if (strcmp(layer->getDebugName(), FOD_TOUCHED_LAYER_NAME) == 0) {
-        mDimmingEnabled = false;
-    }
     // If a layer has a parent, we allow it to out-live it's handle
     // with the idea that the parent holds a reference and will eventually
     // be cleaned up. However no one cleans up the top-level so we do so

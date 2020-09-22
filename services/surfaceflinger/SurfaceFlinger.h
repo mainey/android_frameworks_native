@@ -1036,7 +1036,6 @@ private:
     std::atomic<uint32_t> mFrameMissedCount = 0;
     std::atomic<uint32_t> mHwcFrameMissedCount = 0;
     std::atomic<uint32_t> mGpuFrameMissedCount = 0;
-    bool mDimmingEnabled = false;
 
     TransactionCompletedThread mTransactionCompletedThread;
 
