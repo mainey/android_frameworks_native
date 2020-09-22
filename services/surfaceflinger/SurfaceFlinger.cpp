@@ -4279,7 +4279,7 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
         mDimmingEnabled = true;
         isDimLayer = true;
         createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
-                    ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), DimLayerHandle,
+                    ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), &DimLayerHandle,
                     gbp, parentHandle, parentLayer);
         fromHandle(DimLayerHandle)->setColor(half3{0, 0, 0});
     }
