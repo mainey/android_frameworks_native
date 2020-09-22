@@ -4278,8 +4278,8 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
         isFODLayer = true;
         createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
-                    ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), &DimLayerHandle,
-                    gbp, parentHandle, parentLayer);
+                    ISurfaceComposerClient::eFXSurfaceBufferState, std::move(metadata),
+                    &DimLayerHandle, gbp, parentHandle, parentLayer);
     }
     bool primaryDisplayOnly = false;
 
@@ -4302,6 +4302,10 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
         case ISurfaceComposerClient::eFXSurfaceBufferState:
             result = createBufferStateLayer(client, uniqueName, w, h, flags, std::move(metadata),
                                             handle, &layer);
+            if (strcmp(name, String8("GODDAMDIMLAYER")) == 0) {
+                layer->setColorTransform(mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+                // layer->setAlpha(0.2f);
+            }
             break;
         case ISurfaceComposerClient::eFXSurfaceColor:
             // check if buffer size is set for color layer.
