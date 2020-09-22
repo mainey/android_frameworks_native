@@ -4271,17 +4271,17 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     status_t result = NO_ERROR;
 
     sp<Layer> layer;
+    sp<IBinder> DimLayerHandle;
+    bool isDimLayer = false;
 
     String8 uniqueName = getUniqueLayerName(name);
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
         mDimmingEnabled = true;
-        sp<IBinder> DimLayerHandle;
+        isDimLayer = true;
         createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
                     ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), DimLayerHandle,
                     gbp, parentHandle, parentLayer);
-        parentHandle = DimLayerHandle;
-        parentLayer = fromHandle(DimLayerHandle);;
-        parentLayer->SetColor(half3{0, 0, 0});
+        fromHandle(DimLayerHandle)->setColor(half3{0, 0, 0});
     }
     bool primaryDisplayOnly = false;
 
@@ -4340,7 +4340,7 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     }
 
     bool addToCurrentState = callingThreadHasUnscopedSurfaceFlingerAccess();
-    result = addClientLayer(client, *handle, *gbp, layer, parentHandle, parentLayer,
+    result = addClientLayer(client, *handle, *gbp, layer, isDimLayer ? DimLayerHandle : parentHandle, isDimLayer ? fromHandle(DimLayerHandle) : parentLayer,
                             addToCurrentState);
     if (result != NO_ERROR) {
         return result;
