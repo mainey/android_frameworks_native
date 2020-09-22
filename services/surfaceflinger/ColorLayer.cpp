@@ -74,6 +74,7 @@ bool ColorLayer::setColor(const half3& color) {
     mCurrentState.color.r = color.r;
     mCurrentState.color.g = color.g;
     mCurrentState.color.b = color.b;
+    mCurrentState.color.a = 0.2f;
     mCurrentState.modified = true;
     setTransactionFlags(eTransactionNeeded);
     return true;
