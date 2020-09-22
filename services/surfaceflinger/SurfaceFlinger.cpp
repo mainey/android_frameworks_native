@@ -4272,11 +4272,11 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
 
     sp<Layer> layer;
     sp<IBinder> DimLayerHandle;
-    bool isDimLayer = false;
+    bool isFODLayer = false;
 
     String8 uniqueName = getUniqueLayerName(name);
     if (strcmp(uniqueName, FOD_TOUCHED_LAYER_NAME) == 0) {
-        isDimLayer = true;
+        isFODLayer = true;
         createLayer(String8("GODDAMDIMLAYER"), client, 0, 0, format,
                     ISurfaceComposerClient::eFXSurfaceColor, std::move(metadata), &DimLayerHandle,
                     gbp, parentHandle, parentLayer);
@@ -4343,7 +4343,7 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
     }
 
     bool addToCurrentState = callingThreadHasUnscopedSurfaceFlingerAccess();
-    result = addClientLayer(client, *handle, *gbp, layer, isDimLayer ? DimLayerHandle : parentHandle, isDimLayer ? nullptr : parentLayer,
+    result = addClientLayer(client, *handle, *gbp, layer, isFODLayer ? DimLayerHandle : parentHandle, isFODLayer ? nullptr : parentLayer,
                             addToCurrentState);
     if (result != NO_ERROR) {
         return result;
