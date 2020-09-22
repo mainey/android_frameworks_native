@@ -4314,8 +4314,10 @@ status_t SurfaceFlinger::createLayer(const String8& name, const sp<Client>& clie
 
             result = createColorLayer(client, uniqueName, w, h, flags, std::move(metadata), handle,
                                       &layer);
-            if (strcmp(name, String8("GODDAMDIMLAYER")) == 0)
+            if (strcmp(name, String8("GODDAMDIMLAYER")) == 0) {
                 layer->setColor(half3{0, 0, 0});
+                layer->setAlpha(0.2f);
+            }
 
             break;
         case ISurfaceComposerClient::eFXSurfaceContainer:
